@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style>
+            #ui-console {
+                background-color: black;
+                color: limegreen;
+                font-family: monospace;
+                overflow-y: scroll;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="ui-console">
+            
+        </div>
+    </body>
+    <script>
+        var ctext = [];
+        var c = document.getElementById("ui-console");
+        var nlot = document.createElement("span");
+        var nlot2 = document.createElement("span");
+        nlot.style.display = "block";
+        nlot2.style.display = "block";
+        nlot2.innerHTML = "Eureka!!";
+        nlot.innerHTML = "hey!";
+        c.appendChild(nlot);
+        c.appendChild(nlot2);
+        
+        
+    </script>
+</html>
