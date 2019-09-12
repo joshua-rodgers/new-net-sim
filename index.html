@@ -3,10 +3,13 @@
     <head>
         <style>
             #ui-console {
+                width: 50%;
+                min-width: 500px;
                 background-color: black;
                 color: limegreen;
                 font-family: monospace;
                 overflow-y: scroll;
+                
             }
         </style>
     </head>
@@ -16,17 +19,109 @@
         </div>
     </body>
     <script>
-        var ctext = [];
+        var cons = new Array(20);
         var c = document.getElementById("ui-console");
-        var nlot = document.createElement("span");
-        var nlot2 = document.createElement("span");
-        nlot.style.display = "block";
-        nlot2.style.display = "block";
-        nlot2.innerHTML = "Eureka!!";
-        nlot.innerHTML = "hey!";
-        c.appendChild(nlot);
-        c.appendChild(nlot2);
+        var activeLine = 0;  // variable to mark where caret is via 'cons' array index
+        var nout = new Output();
+        var new_line_handler = function(event){
+            if(event.code == "Enter"){
+                event.preventDefault();
+                submitLine();
+            }
+        }
+        
+        function build_console(){
+            for(i of cons.keys()){
+                cons[i] = document.createElement("span");
+                cons[i].style.display = "block";
+                cons[i].innerHTML = "&nbsp";
+                c.appendChild(cons[i]);
+            }
+            cons[activeLine].innerHTML = prompt; 
+        }
+        
+        function init_console(){
+            cons[activeLine].addEventListener("keypress", new_line_handler);
+            document.getElementById("al").focus();
+        }
+        
+        /*
+        function generate_output(num_lines, line){
+            var output_text = new Array(50);
+            var line_count = 0
+            
+            for(;line_count < num_lines; line_count++){
+                output_text[line_count] = line;
+            }
+            
+        }*/
+        
+        function Output(output_text = []){
+            this.build_output = function (input) {
+                output_text.push(input);
+            }
+            this.send_output = function () {
+                cons[activeLine].innerHTML = "&nbsp";
+                cons[activeLine].removeEventListener("keypress", new_line_handler);
+                activeLine = 0;
+                activeLine += output_text.length;
+                
+                for(a of cons.keys()){
+                    if(a < activeLine){
+                        if(output_text[a] == ""){
+                            cons[a].innerHTML = context;
+                        }else {
+                            cons[a].innerHTML = context + output_text[a];
+                        }
+                    }else {
+                        cons[a].innerHTML = "&nbsp";
+                    }  
+                }
+                
+                console.log(output_text);
+                
+                cons[activeLine].innerHTML = prompt;
+                cons[activeLine].addEventListener("keypress", new_line_handler);                                                          
+                document.getElementById("al").focus();
+                
+            }
+            this.finish = function (isFinished = false) {
+                if(isFinished){
+                    output_text.length = 0;
+                    this.send_output();
+                }
+            }
+        }
+        
+        var context = "<span contentEditable=false>>&nbsp</span>";
+        var line = "<span id='al' contentEditable=true></span>";
+        var prompt = context + line;
+        
+        /*var nlot5 = document.createElement("span");
+        nlot5.style.display = "block";
+        nlot5.innerHTML = prom + ;
+        nlot5.addEventListener("keypress", function(e){ if(e.keyCode == 13) submitLine(); });
+        */
         
         
+        function submitLine(){
+            var submitted_text = document.getElementById("al").textContent;
+            
+            if(submitted_text == "clear"){
+                nout.finish(true);
+            }else {
+                nout.build_output(submitted_text);
+                nout.send_output();
+            }
+            
+            
+            
+            //generate_output(1, submitted_text);
+            
+            console.log(submitted_text);
+        }
+        
+        build_console();
+        init_console();
     </script>
 </html>
