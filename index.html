@@ -19,11 +19,11 @@
         </div>
     </body>
     <script>
-        var cons = new Array(20);
+        var cons = new Array(20);  // the console itself
         var c = document.getElementById("ui-console");
         var activeLine = 0;  // variable to mark where caret is via 'cons' array index
-        var nout = new Output();
-        var new_line_handler = function(event){
+        var screen_buffer = new Output();  // buffer is encapsulated within Output object
+        var new_line_handler = function(event){  // necessary since listener removal can't handle anonymous functions
             if(event.code == "Enter"){
                 event.preventDefault();
                 submitLine();
@@ -33,8 +33,8 @@
         function build_console(){
             for(i of cons.keys()){
                 cons[i] = document.createElement("span");
-                cons[i].style.display = "block";
-                cons[i].innerHTML = "&nbsp";
+                cons[i].style.display = "block";  // span by default is inline
+                cons[i].innerHTML = "&nbsp"; // requires an HTML 'non-breaking space' to prevent element collapse
                 c.appendChild(cons[i]);
             }
             cons[activeLine].innerHTML = prompt; 
@@ -46,79 +46,65 @@
         }
         
         /*
-        function generate_output(num_lines, line){
-            var output_text = new Array(50);
-            var line_count = 0
-            
-            for(;line_count < num_lines; line_count++){
-                output_text[line_count] = line;
-            }
-            
-        }*/
-        
+        * The Output object hides the output_text Array to prevent accidental modification of the buffer
+        * As output_text is defined in the parameter list, it is only accessible within the object itself
+        * not even via the prototype chain.
+        *
+        *
+        *
+        *
+        */
         function Output(output_text = []){
             this.build_output = function (input) {
                 output_text.push(input);
             }
             this.send_output = function () {
-                cons[activeLine].innerHTML = "&nbsp";
-                cons[activeLine].removeEventListener("keypress", new_line_handler);
-                activeLine = 0;
+                cons[activeLine].innerHTML = "&nbsp";  // clear current line
+                cons[activeLine].removeEventListener("keypress", new_line_handler);  // remove "ENTER" key listener
+                activeLine = 0;  // this and next line tell us how far to move active line down to make room for output
                 activeLine += output_text.length;
                 
-                for(a of cons.keys()){
-                    if(a < activeLine){
-                        if(output_text[a] == ""){
-                            cons[a].innerHTML = context;
-                        }else {
+                for(a of cons.keys()){  // .keys() just  gives us cons[]'s indexes to iterate with
+                    if(a < activeLine){ // lines above active line
+                        if(output_text[a] == ""){  // blank line submitted?
+                            cons[a].innerHTML = context;  // output prompt only
+                        }else {  
                             cons[a].innerHTML = context + output_text[a];
                         }
-                    }else {
+                    }else {  //lines below active line
                         cons[a].innerHTML = "&nbsp";
                     }  
                 }
-                
-                console.log(output_text);
                 
                 cons[activeLine].innerHTML = prompt;
                 cons[activeLine].addEventListener("keypress", new_line_handler);                                                          
                 document.getElementById("al").focus();
                 
             }
-            this.finish = function (isFinished = false) {
-                if(isFinished){
-                    output_text.length = 0;
-                    this.send_output();
+            this.clear_buffer = function (ok_to_clear = false) {  // default parameter value requires explicit passing of 'true'
+                if(ok_to_clear){
+                    output_text = [];  // there are no other references to output_text, so this is safe and discards old array
+                    this.send_output();  // actually 'commits' wipe to screen
                 }
             }
         }
         
+        // These declarations create the prompt. They're down here because the console 
+        // dynamically generated and is only now ready to be manipulated. 'context' will
+        // change as its name suggests
         var context = "<span contentEditable=false>>&nbsp</span>";
         var line = "<span id='al' contentEditable=true></span>";
         var prompt = context + line;
-        
-        /*var nlot5 = document.createElement("span");
-        nlot5.style.display = "block";
-        nlot5.innerHTML = prom + ;
-        nlot5.addEventListener("keypress", function(e){ if(e.keyCode == 13) submitLine(); });
-        */
-        
         
         function submitLine(){
             var submitted_text = document.getElementById("al").textContent;
             
             if(submitted_text == "clear"){
-                nout.finish(true);
+                screen_buffer.clear_buffer(true);
             }else {
-                nout.build_output(submitted_text);
-                nout.send_output();
+                screen_buffer.build_output(submitted_text);
+                screen_buffer.send_output();
             }
-            
-            
-            
-            //generate_output(1, submitted_text);
-            
-            console.log(submitted_text);
         }
         
         build_console();
