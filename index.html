@@ -1,113 +1,13 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <style>
-            #ui-console {
-                width: 50%;
-                min-width: 500px;
-                background-color: black;
-                color: limegreen;
-                font-family: monospace;
-                overflow-y: scroll;
-                
-            }
-        </style>
+        <title>LanSim</title>
+        <link rel="stylesheet" href="styles.css">
     </head>
     <body>
-        <div id="ui-console">
+        <div id="ui-terminal">
             
         </div>
     </body>
-    <script>
-        var cons = new Array(20);  // the console itself
-        var c = document.getElementById("ui-console");
-        var activeLine = 0;  // variable to mark where caret is via 'cons' array index
-        var screen_buffer = new Output();  // buffer is encapsulated within Output object
-        var new_line_handler = function(event){  // necessary since listener removal can't handle anonymous functions
-            if(event.code == "Enter"){
-                event.preventDefault();
-                submitLine();
-            }
-        }
-        
-        function build_console(){
-            for(i of cons.keys()){
-                cons[i] = document.createElement("span");
-                cons[i].style.display = "block";  // span by default is inline
-                cons[i].innerHTML = "&nbsp"; // requires an HTML 'non-breaking space' to prevent element collapse
-                c.appendChild(cons[i]);
-            }
-            cons[activeLine].innerHTML = prompt; 
-        }
-        
-        function init_console(){
-            cons[activeLine].addEventListener("keypress", new_line_handler);
-            document.getElementById("al").focus();
-        }
-        
-        /*
-        * The Output object hides the output_text Array to prevent accidental modification of the buffer
-        * As output_text is defined in the parameter list, it is only accessible within the object itself
-        * not even via the prototype chain.
-        *
-        *
-        *
-        *
-        */
-        function Output(output_text = []){
-            this.build_output = function (input) {
-                output_text.push(input);
-            }
-            this.send_output = function () {
-                cons[activeLine].innerHTML = "&nbsp";  // clear current line
-                cons[activeLine].removeEventListener("keypress", new_line_handler);  // remove "ENTER" key listener
-                activeLine = 0;  // this and next line tell us how far to move active line down to make room for output
-                activeLine += output_text.length;
-                
-                for(a of cons.keys()){  // .keys() just  gives us cons[]'s indexes to iterate with
-                    if(a < activeLine){ // lines above active line
-                        if(output_text[a] == ""){  // blank line submitted?
-                            cons[a].innerHTML = context;  // output prompt only
-                        }else {  
-                            cons[a].innerHTML = context + output_text[a];
-                        }
-                    }else {  //lines below active line
-                        cons[a].innerHTML = "&nbsp";
-                    }  
-                }
-                
-                cons[activeLine].innerHTML = prompt;
-                cons[activeLine].addEventListener("keypress", new_line_handler);                                                          
-                document.getElementById("al").focus();
-                
-            }
-            this.clear_buffer = function (ok_to_clear = false) {  // default parameter value requires explicit passing of 'true'
-                if(ok_to_clear){
-                    output_text = [];  // there are no other references to output_text, so this is safe and discards old array
-                    this.send_output();  // actually 'commits' wipe to screen
-                }
-            }
-        }
-        
-        // These declarations create the prompt. They're down here because the console 
-        // dynamically generated and is only now ready to be manipulated. 'context' will
-        // change as its name suggests
-        var context = "<span contentEditable=false>>&nbsp</span>";
-        var line = "<span id='al' contentEditable=true></span>";
-        var prompt = context + line;
-        
-        function submitLine(){
-            var submitted_text = document.getElementById("al").textContent;
-            
-            if(submitted_text == "clear"){
-                screen_buffer.clear_buffer(true);
-            }else {
-                screen_buffer.build_output(submitted_text);
-                screen_buffer.send_output();
-            }
-        }
-        
-        build_console();
-        init_console();
-    </script>
+    <script type="text/javascript" src="terminal.js"></script>
 </html>
