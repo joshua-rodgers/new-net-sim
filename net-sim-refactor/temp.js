@@ -8,10 +8,7 @@ function Output(){
     }
     */
     
-    this.build_output = function (input) {
-        _output_text.push(input);
-    }
-    
+
     var _move_active_line = function () {
         _buffer[_active_line].innerHTML = "&nbsp";  // clear current line
         _buffer[_active_line].removeEventListener("keypress", new_line_handler);  // remove "ENTER" key listener

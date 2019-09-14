@@ -3,6 +3,7 @@ function Terminal(){
     
     var _buffer = new Buffer(this);
     var _parent_element = document.getElementById("ui-terminal");
+    var _BUFFER_LENGTH = 100;
 
     
     var _context = "<span contentEditable=false>>&nbsp</span>";
@@ -27,7 +28,7 @@ function Terminal(){
     // public:
     
     this.init_terminal = function(){
-        _buffer.init_buffer(_prompt, _parent_element);
+        _buffer.init_buffer(_prompt, _parent_element, _BUFFER_LENGTH);
     }
     
 
