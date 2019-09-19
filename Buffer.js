@@ -14,6 +14,7 @@ function Buffer(owner) { // A Buffer belongs to a terminal
     var _buffer = null;
     var _pre_buffer = null; // staging place for new output
     var _active_line = 0
+    var _buffer_full = false;
     
     // These lines form the prompt. 'Live line' doesn't change.
     // Others inititalized in init_buffer, context changes with
@@ -22,6 +23,8 @@ function Buffer(owner) { // A Buffer belongs to a terminal
     var _terminal_live_line = "<span id='al' contentEditable=true></span>";
     var _terminal_prompt = "";
     var _terminal_parent = null;
+    
+    var temp_flip = false;
     
     // END PRIVATE PROPERTY DECLARATIONS
     //**************************************
@@ -35,7 +38,6 @@ function Buffer(owner) { // A Buffer belongs to a terminal
     
     var _build_buffer = function(){
         _buffer = new Array(_BUFFER_LENGTH);
-        _pre_buffer = new Array();
         
         for(i of _buffer.keys()){
             _buffer[i] = document.createElement("span");
@@ -66,28 +68,56 @@ function Buffer(owner) { // A Buffer belongs to a terminal
     }
 
     var _move_active_line = function () {
-        _buffer[_active_line].innerHTML = "&nbsp";  // clear current line
+        var _last_active_line = document.getElementById("al");
+        _last_active_line.id = "";
         _buffer[_active_line].removeEventListener("keypress", _new_line_handler);  // remove "ENTER" key listener
-        _active_line = 0;  // this and next line tell us how far to move active line down to make room for output
-        _active_line += _pre_buffer.length;
-    } 
-    
-    var _update_screen_buffer = function () {
-        for(a of _buffer.keys()){  // .keys() just  gives us terminal[]'s indexes to iterate with
-            if(a < _active_line){ // lines above active line
-                if(_pre_buffer[a] == ""){  // blank line submitted?
-                    _buffer[a].innerHTML = _terminal_current_context;  // output prompt only
-                }else {  
-                    _buffer[a].innerHTML = _terminal_current_context + _pre_buffer[a];
-                }
-            }else {  //lines below active line
-                _buffer[a].innerHTML = "&nbsp";
-            }  
+        _active_line = _active_line + _pre_buffer.length + 1;
+        console.log(_active_line);
+        if(_active_line >= _BUFFER_LENGTH) {  // if incoming output will exceed buffer...
+            _buffer_full = true; 
+            _active_line = _BUFFER_LENGTH - 1; 
         }
     } 
     
+    var _append_output = function () {
+        if(_buffer_full){
+            var _insertion_point = _handle_overflow();
+            
+            for(var i = _insertion_point, j = 0; j < _pre_buffer.length; i++, j++){
+                _buffer[i].innerHTML = _terminal_current_context + _pre_buffer[j];
+            }    
+        }else {
+            for(var i = _active_line - _pre_buffer.length, j = 0; j < _pre_buffer.length; i++, j++){
+                _buffer[i].innerHTML = _terminal_current_context + _pre_buffer[j];
+            }
+        }
+    }
+    
+    var _handle_overflow = function () {
+        
+        _dump_overflow();
+        _append_space();
+        _buffer_full = false;
+        
+        return _active_line - _pre_buffer.length;
+    }
+    
+    var _append_space = function (){
+            for(var i = 0; i <= _pre_buffer.length; i++){
+                var _new_line = document.createElement("span");
+                _new_line.style.display = "block";
+                _buffer.push(_new_line);
+                _terminal_parent.appendChild(_new_line);
+            }
+        }
+    
+    var _dump_overflow = function () {
+            for(var i = 0; i <= _pre_buffer.length; i++){
+                _terminal_parent.removeChild(_buffer.shift());
+            }
+        }
+    
     var _reinit_terminal = function () {
-        console.log(_active_line);
         _buffer[_active_line].innerHTML = _terminal_prompt;
         _buffer[_active_line].addEventListener("keypress", _new_line_handler);         
         document.getElementById("al").focus();
@@ -110,18 +140,20 @@ function Buffer(owner) { // A Buffer belongs to a terminal
         _terminal_parent = parent;
         _terminal_current_context = current_context;
         _BUFFER_LENGTH = buffer_length;
-        console.log(_active_line);
         _build_buffer();
         _init_prompt();
     }
     
     this.build_output = function (input) {
-        _pre_buffer.push(input);
+
     }    
     
-    this.write_output = function () {
+    this.write_output = function (input) {
+        _pre_buffer = input;
+        _last_buffer = _buffer;
+        
         _move_active_line();
-        _update_screen_buffer();
+        _append_output();
         _reinit_terminal();
     } 
 
