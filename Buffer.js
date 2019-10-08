@@ -84,11 +84,11 @@ function Buffer(owner) { // A Buffer belongs to a terminal
             var _insertion_point = _handle_overflow();
             
             for(var i = _insertion_point, j = 0; j < _pre_buffer.length; i++, j++){
-                _buffer[i].innerHTML = _terminal_current_context + _pre_buffer[j];
+                _buffer[i].innerHTML = /*_terminal_current_context +*/ _pre_buffer[j];
             }    
         }else {
             for(var i = _active_line - _pre_buffer.length, j = 0; j < _pre_buffer.length; i++, j++){
-                _buffer[i].innerHTML = _terminal_current_context + _pre_buffer[j];
+                _buffer[i].innerHTML = /*_terminal_current_context +*/ _pre_buffer[j];
             }
         }
     }
