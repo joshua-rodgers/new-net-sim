@@ -1,5 +1,7 @@
 # new-net-sim
- console only LAN simulator in JavaScript
+ console only LAN simulator in JavaScript  
+ 
+ ![gif of network sim test run](net_sim.gif)
  
 ## Concept
  The basic idea is to have a terminal like interface embedded in a web page in which
